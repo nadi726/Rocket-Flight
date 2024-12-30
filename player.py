@@ -1,18 +1,27 @@
 import pyxel
-from frame_manager import FrameManager
+from states import FlyState, RunState
+
+
 class Player:
     W = 12
     H = 16
-    FLY_FRAMES = [[0, 16 * i, 0, 16, 16, 3] for i in range(1, 5)]
-    RUN_FRAMES = [[0, 16 *i, 16, 16, 16, 3] for i in range(7)]
+    MAX_SPEED = 300
 
     def __init__(self):
         self.x = 30
         self.y = 35
-        self.frame = FrameManager(self.RUN_FRAMES)
+        self.v = 0.2
+        self.a = 0.3
 
-    def update(self, dt):
-        self.frame.update(dt)
+        self.state = FlyState()
+
+    def update(self):
+        self.v += min(self.a, self.MAX_SPEED)
+        self.y += self.v
+
+        if pyxel.btn(pyxel.KEY_SPACE):
+            self.v = -3
+        self.state.update()
 
     def draw(self):
-        self.frame.draw(self.x, self.y)
+        self.state.draw(self.x, self.y)
