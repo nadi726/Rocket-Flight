@@ -1,15 +1,14 @@
 import pyxel
 from states import FlyState, RunState
+from entity import Entity
 
-
-class Player:
+class Player(Entity):
     W = 12
     H = 16
     MAX_SPEED = 300
 
     def __init__(self):
-        self.x = 30
-        self.y = 35
+        super().__init__(30, 35, Player.W, Player.H)
         self.v = 0.2
         self.a = 0.3
 
@@ -19,8 +18,17 @@ class Player:
         self.v += min(self.a, self.MAX_SPEED)
         self.y += self.v
 
+        if self.bottom > pyxel.height * 4 / 5:
+            self.bottom = pyxel.height * 4 / 5
+            self.v = 0
+        
         if pyxel.btn(pyxel.KEY_SPACE):
             self.v = -3
+            if self.a == 0:
+                self.a = 0.3
+        
+
+
         self.state.update()
 
     def draw(self):
