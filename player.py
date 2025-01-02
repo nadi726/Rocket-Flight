@@ -9,10 +9,10 @@ class Player(Entity):
 
     def __init__(self):
         super().__init__(30, 35, Player.W, Player.H)
+        self.state = FlyState(self)
         self.v = 0.2
         self.a = 0.3
 
-        self.state = FlyState()
 
     def update(self):
         self.v += min(self.a, self.MAX_SPEED)
@@ -22,13 +22,13 @@ class Player(Entity):
             self.bottom = pyxel.height * 4 / 5 - 1
             self.v = 0
             self.a = 0
-            self.state = RunState()
+            self.state = RunState(self)
         
         if pyxel.btn(pyxel.KEY_SPACE):
             self.v = -3
             if self.a == 0:
                 self.a = 0.3
-                self.state = FlyState()
+                self.state = FlyState(self)
 
         self.state.update()
 
