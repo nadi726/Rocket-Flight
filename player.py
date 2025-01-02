@@ -31,6 +31,3 @@ class Player(Entity):
                 self.state = FlyState(self)
 
         self.state.update()
-
-    def draw(self):
-        self.state.draw(self.x, self.y)

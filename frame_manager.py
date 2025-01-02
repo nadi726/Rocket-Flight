@@ -33,3 +33,8 @@ class Frame:
     colkey : int | None = None
     rotate : float | None = None
     scale : float | None = None
+
+    @staticmethod
+    def empty():
+        """Create an empty Frame with default values."""
+        return Frame(0, 0, 0, 0, 0)

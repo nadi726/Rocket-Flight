@@ -15,6 +15,8 @@ def make_laser(direction=1):
         return make_horizontal(x, size)
     elif direction == 2:
         return make_vertical(x, size)
+    elif direction == 3:
+        return make_diagonal1(x, size)
     
 def make_horizontal(x, size):
     height = 16
@@ -42,4 +44,7 @@ def make_vertical(x, size):
 
     return middle_parts | {top, bottom}
 
-
+def make_diagonal1(x, size):
+    height = 16 * (size + 2)
+    y = pyxel.rndi(consts.CEILING_Y, consts.FLOOR_Y - height)
+    left_frame = tuple(Frame(0, 48 + 16 * i, 80, 16, 16, 3) for i in range(4))
