@@ -15,6 +15,7 @@ class Player(Entity):
 
 
     def update(self):
+        super().update()
         self.v += min(self.a, self.MAX_SPEED)
         self.y = max(0, self.y+self.v)
 

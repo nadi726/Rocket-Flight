@@ -1,7 +1,7 @@
 import pyxel
 import consts
-from entity import Entity
-from frame_manager import Frame
+from entity import Entity, HitBox
+from frame_manager import Frame, FrameManager
 
 HORIZONTAL = 1
 VERTICAL = 2
@@ -21,28 +21,40 @@ def make_laser(direction=1):
 def make_horizontal(x, size):
     height = 16
     y = pyxel.rndi(consts.CEILING_Y, consts.FLOOR_Y - height)
-    left_frame = tuple((0, 16 + 8 * i, 48, 5, 16, 3) for i in range(4))
-    middle_frame = tuple((0, 48 + 16 * i, 48, 16, 10, 3) for i in range(4))
-    right_frame = tuple((0, 16 + 8 * i, 48, -5, 16, 3) for i in range(4))
 
-    left = Entity(x, y, 5, 16, left_frame)
-    middle_parts ={Entity(x + 5 + 16 * m, y + 3, 16, 10, middle_frame) for m in range(size)}
-    right = Entity(x + 5 + size * 16, y, 5, 16, right_frame)
+    left_frame = FrameManager(Frame(0, 16 + 8 * i, 48, 5, 16, 3) for i in range(4))
+    middle_frame = FrameManager(Frame(0, 48 + 16 * i, 48, 16, 10, 3) for i in range(4))
+    right_frame = FrameManager(Frame(0, 16 + 8 * i, 48, -5, 16, 3) for i in range(4))
 
-    return middle_parts | {left, right}
+    middle_parts = ({"frame_manager" : middle_frame, "offset" : (5 + m * 16, 3)} for m in range(size))
+    parts = ({"frame_manager" : left_frame}, {"frame_manager" : right_frame, "offset" : (5 + size * 16, 0)}, *middle_parts)
+    
+    left_hitbox = HitBox(0, 0, 5, 16)
+    middle_hitboxes = (HitBox(5 + 16 * m, 3, 16, 10) for m in range(size))
+    right_hitbox = HitBox(5 + size * 16, 0, 5, 16)
+    hitboxes = (left_hitbox, *middle_hitboxes, right_hitbox)
+    
+    laser = Entity(x, y, 5 * 2 + 16 * size, height, parts=parts, hitboxes=hitboxes)
+    return {laser, }
 
 def make_vertical(x, size):
     height = 5 * 2 + size * 16
     y = pyxel.rndi(consts.CEILING_Y, consts.FLOOR_Y - height)
-    top_frame = tuple(Frame(0, 16 * i, 64, 16, 5, 3) for i in range(4))
-    middle_frame = tuple(Frame(0, 64 + 16 * i, 64, 10, 16, 3) for i in range(4))
-    bottom_frame = tuple(Frame(0, 16 * i, 64, 16, -5, 3) for i in range(4))
 
-    top = Entity(x, y, 16, 5, top_frame)
-    middle_parts ={Entity(x + 3, y + 5 + 16 * m, 10, 16, middle_frame) for m in range(size)}
-    bottom = Entity(x, y + 5 + size * 16, 16, 5, bottom_frame)
+    top_frame = FrameManager(Frame(0, 16 * i, 64, 16, 5, 3) for i in range(4))
+    middle_frame = FrameManager(Frame(0, 64 + 16 * i, 64, 10, 16, 3) for i in range(4))
+    bottom_frame = FrameManager(Frame(0, 16 * i, 64, 16, -5, 3) for i in range(4))
 
-    return middle_parts | {top, bottom}
+    middle_parts = ({"frame_manager" : middle_frame, "offset" : (3, 5 + 16 * m)} for m in range(size))
+    parts = ({"frame_manager" : top_frame}, *middle_parts, {"frame_manager" : bottom_frame, "offset" : (0, 5 + size * 16)})
+    
+    top_hitbox = HitBox(0, 0, 16, 5)
+    middle_hitboxes = (HitBox(3, 5 + 16 * m, 10, 16) for m in range(size))
+    bottom_hitbox = HitBox(0, 5 + size * 16, 16, 5)
+    hitboxes = (top_hitbox, *middle_hitboxes, bottom_hitbox)
+    
+    laser = Entity(x, y, 16, height, parts=parts, hitboxes=hitboxes)
+    return {laser, }
 
 def make_diagonal1(x, size):
     height = 16 * (size + 2)

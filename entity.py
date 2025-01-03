@@ -42,6 +42,7 @@ class RectMixin:
     def bottom(self, value):
         self.top = value - self.h
 
+
 @dataclass
 class HitBox(RectMixin):
     """Represents a collision box relative to an entity's position.
@@ -77,22 +78,52 @@ class HitBox(RectMixin):
 
 
 class Entity(RectMixin):
-    """A game entity with position, collision handling, and sprite management."""
+    """A game entity with position, collision handling, and sprite management.
 
-    def __init__(self, x : float, y : float, w : float, h : float, frame : Iterable[Frame] = (Frame.empty(),), hitboxes : list[HitBox] = None):
+    An Entity can be either:
+    1. A single-part entity:
+        - The "parts" parameter is ignored.
+        - After initialization, the "frame" property should be set manually.
+
+    2. A multi-part entity:
+        - Provide a sequence of parts.
+        - Each part is a dictionary of the form:
+          {"frame_manager": frame_manager, "offset": (x, y)}.
+        - The "offset" key is optional.
+
+    Both kinds of entities can have multiple hitboxes. If no hitbox is provided, 
+    the entity gets a default hitbox based on its dimensions.
+    """
+
+    def __init__(self, x : float, y : float, w : float, h : float, parts : Iterable[dict] = None, hitboxes : Iterable[HitBox] = None):
         self.x : float = x
         self.y : float = y
-        self.w : int = w
-        self.h : int = h
-        self.frame = FrameManager(frame)
+        self.w : float = w
+        self.h : float = h
 
+        self.parts = parts
+        if parts is None:
+            self.parts = ({"frame_manager" : None},)
+        
         self.hitboxes = hitboxes
         if hitboxes is None:
             self.hitboxes = [HitBox(0, 0, w, h)]
         for hitbox in self.hitboxes:
             hitbox.entity = self
 
-    def collides(self, other):
+    @property
+    def frame(self) -> FrameManager:
+        """Convenience property to access the main part's frame manager."""
+        return self.parts[0]["frame_manager"]
+    
+    @frame.setter
+    def frame(self, value : FrameManager):
+        """Convenience property to set the main part's frame manager."""
+        if not isinstance(value, FrameManager):
+            raise TypeError("frame must be an instance of FrameManager.")
+        self.parts[0]["frame_manager"] = value 
+    
+    def collides(self, other) -> bool:
         return any(
             self_hitbox.collides(other_hitbox)
             for self_hitbox in self.hitboxes
@@ -100,12 +131,16 @@ class Entity(RectMixin):
         )
     
     def update(self):
-        self.frame.update()
-    
+        for part in self.parts:
+            part["frame_manager"].update()
+
     def draw(self, show_bounding_box=False ,show_hitboxes=False):
         if show_bounding_box:
             pyxel.rect(self.x, self.y, self.w, self.h, 3)
         if show_hitboxes:
             for hitbox in self.hitboxes:
                 hitbox.debug_draw()
-        self.frame.draw(self.x, self.y)
+        
+        for part in self.parts:
+            offset_x, offset_y = part.get("offset", (0, 0))
+            part["frame_manager"].draw(self.x + offset_x, self.y + offset_y)

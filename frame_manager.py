@@ -2,6 +2,7 @@ import pyxel
 from itertools import cycle
 from dataclasses import dataclass, asdict
 
+
 class FrameManager:
     def __init__(self, frames: tuple, frame_delay=2):
         self.frames = cycle(frames)
