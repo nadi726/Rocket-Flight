@@ -12,10 +12,10 @@ class FrameManager:
     
     def update(self):
         self.elapsed_frames += 1
-        if self.elapsed_frames > self.frame_delay:
+        if self.elapsed_frames >= self.frame_delay:
             self.frame = next(self.frames)
-            self.elapsed_frames = 0
-    
+            self.elapsed_frames = self.elapsed_frames - self.frame_delay
+
     def draw(self, x, y):
         if isinstance(self.frame, Frame):
             frame = asdict(self.frame)

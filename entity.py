@@ -131,8 +131,11 @@ class Entity(RectMixin):
         )
     
     def update(self):
-        for part in self.parts:
-            part["frame_manager"].update()
+        # Extract unique FrameManager instances from parts
+        unique_frame_managers = {part["frame_manager"] for part in self.parts}
+        # Ensure the frames stay in sync by only updating unique frame managers
+        for frame_manager in unique_frame_managers:
+            frame_manager.update()
 
     def draw(self, show_bounding_box=False ,show_hitboxes=False):
         if show_bounding_box:
