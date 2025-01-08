@@ -146,12 +146,12 @@ class Entity:
             hitbox.entity = self
 
     @property
-    def frame(self) -> FrameManager:
+    def frame_manager(self) -> FrameManager:
         """Convenience property to access the main part's frame manager."""
         return self.parts[0].frame_manager
 
-    @frame.setter
-    def frame(self, value: FrameManager):
+    @frame_manager.setter
+    def frame_manager(self, value: FrameManager):
         """Convenience property to set the main part's frame manager."""
         self.parts[0].frame_manager = value
 

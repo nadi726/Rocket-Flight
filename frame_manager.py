@@ -3,6 +3,8 @@ from itertools import cycle
 
 import pyxel
 
+from consts import IMG_COLKEY
+
 
 @dataclass
 class Frame:
@@ -11,7 +13,7 @@ class Frame:
     v: float
     w: float
     h: float
-    colkey: int | None = None
+    colkey: int | None = IMG_COLKEY
     rotate: float | None = None
     scale: float | None = None
 

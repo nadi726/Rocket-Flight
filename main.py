@@ -1,5 +1,6 @@
 import pyxel
 
+import consts
 from entity import Entity
 from lasers import make_laser
 from player import Player
@@ -8,7 +9,7 @@ from scientist import Scientist
 
 class App:
     def __init__(self):
-        pyxel.init(320, 192)
+        pyxel.init(consts.W, consts.H)
         pyxel.load("./res.pyxres")
 
         self.player = Player()
@@ -53,7 +54,7 @@ class App:
 
     def draw(self):
         pyxel.cls(0)
-        pyxel.bltm(0, 0, 0, 0, 0, pyxel.width, pyxel.height)
+        pyxel.bltm(0, 0, 0, 0, 0, consts.W, consts.H)
 
         for entity in self.scrollables:
             entity.draw()
