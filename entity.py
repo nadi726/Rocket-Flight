@@ -105,6 +105,13 @@ class HitBox:
 
 @dataclass
 class EntityPart:
+    """
+    Represents a single part of an entity.
+
+    A part consists of a FrameManager and an offset.
+    The offset is relative to the Entity's origin.
+    """
+
     frame_manager: FrameManager = field(default_factory=FrameManager.empty)
     offset: tuple[float, float] = (0, 0)
 
@@ -119,10 +126,7 @@ class Entity:
         - After initialization, the "frame" property should be set manually.
 
     2. A multi-part entity:
-        - Provide a sequence of parts.
-        - Each part is a dictionary of the form:
-          {"frame_manager": frame_manager, "offset": (x, y)}.
-        - The "offset" key is optional.
+        - Provide a sequence of EntityPart.
 
     Both kinds of entities can have multiple hitboxes. If no hitbox is provided,
     the entity gets a default hitbox based on its dimensions.
@@ -135,10 +139,9 @@ class Entity:
         hitboxes: Iterable[HitBox] | None = None,
     ):
         self.rect = rect
-
         self.parts: tuple[EntityPart, ...] = parts or (EntityPart(),)
-
         self.hitboxes = hitboxes or [HitBox(0, 0, self.rect.w, self.rect.h)]
+
         for hitbox in self.hitboxes:
             hitbox.entity = self
 
@@ -170,7 +173,7 @@ class Entity:
         self.rect.x += dx
         self.rect.y += dy
 
-    def draw(self, *, debug: Literal["bounding box", "hitboxes", "all"] | None = "hitboxes"):
+    def draw(self, *, debug: Literal["bounding box", "hitboxes", "all"] | None = None):
         """
         Draw the entity on the screen.
 

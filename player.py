@@ -1,17 +1,19 @@
 import pyxel
 
 from entity import Entity, Rect
-from states import FlyState, RunState
+from frame_manager import Frame, FrameManager
 
 
 class Player(Entity):
     W = 12
     H = 16
     MAX_SPEED = 300
+    FLY_FRAMES = tuple(Frame(0, 16 * i, 0, 16, 16, 3) for i in range(1, 5))
+    RUN_FRAMES = tuple(Frame(0, 16 * i, 16, 16, 16, 3) for i in range(7))
 
     def __init__(self):
         super().__init__(Rect(30, 35, Player.W, Player.H))
-        self.state = FlyState(self)
+        self.frame = FrameManager(self.FLY_FRAMES)
         self.v = 0.2
         self.a = 0.3
 
@@ -24,12 +26,10 @@ class Player(Entity):
             self.rect.bottom = pyxel.height * 4 / 5 - 1
             self.v = 0
             self.a = 0
-            self.state = RunState(self)
+            self.frame = FrameManager(self.RUN_FRAMES)
 
         if pyxel.btn(pyxel.KEY_SPACE):
             self.v = -3
             if self.a == 0:
                 self.a = 0.3
-                self.state = FlyState(self)
-
-        self.state.update()
+                self.frame = FrameManager(self.FLY_FRAMES)
