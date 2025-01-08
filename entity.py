@@ -1,84 +1,117 @@
-from typing import Iterable
+from collections.abc import Iterable
+from dataclasses import dataclass, field
+from typing import Literal
+
 import pyxel
-from frame_manager import FrameManager, Frame
-from dataclasses import dataclass
+
+from frame_manager import FrameManager
 
 
-class RectMixin:
-    """A mixin providing convenient properties for rectangle-like objects.
-
-    Requires the object to have attributes: x, y, w, h.
+@dataclass
+class Rect:
     """
+    Represents a rectangle with a position (x, y) and a size (w, h).
+
+    Provides properties for the left, right, top and bottom sides of the rectangle.
+    """
+
+    x: float
+    y: float
+    w: float
+    h: float
 
     @property
     def left(self) -> float:
         return self.x
-    
+
     @property
-    def right(self):
+    def right(self) -> float:
         return self.left + self.w
-    
+
     @property
-    def top(self):
+    def top(self) -> float:
         return self.y
 
     @property
     def bottom(self) -> float:
         return self.top + self.h
-    
+
     @left.setter
-    def left(self, value):
+    def left(self, value: float):
         self.x = value
 
     @right.setter
-    def right(self, value):
+    def right(self, value: float):
         self.left = value - self.w
 
     @top.setter
-    def top(self, value):
+    def top(self, value: float):
         self.y = value
 
     @bottom.setter
-    def bottom(self, value):
+    def bottom(self, value: float):
         self.top = value - self.h
 
+    def __add__(self, other: "Rect"):
+        return Rect(self.x + other.x, self.y + other.y, self.w + other.w, self.h + other.h)
 
-@dataclass
-class HitBox(RectMixin):
-    """Represents a collision box relative to an entity's position.
-
-    Requires a reference to the entity before use.
-    """
-    relative_x : float # relative to entity x
-    relative_y : float # relative to entity y
-    w : float
-    h : float
-    entity: "Entity" = None  # Must asign entity before using a HitBox
-    
-    @property
-    def x(self):
-        self.ensure_entity()
-        return self.entity.x + self.relative_x
-    
-    @property
-    def y(self):
-        self.ensure_entity()
-        return self.entity.y + self.relative_y
-    
-    def collides(self, other : "HitBox"):
-        self.ensure_entity()
-        return self.left <= other.right and self.right >= other.left and self.top <= other.bottom and self.bottom >= other.top
-    
-    def ensure_entity(self):
-        if self.entity is None:
-            raise ValueError("HitBox must be associated with an Entity.")
-        
-    def debug_draw(self, color=9):
+    def debug_draw(self, color: int = 3):
         pyxel.rect(self.x, self.y, self.w, self.h, color)
 
 
-class Entity(RectMixin):
-    """A game entity with position, collision handling, and sprite management.
+class HitBox:
+    """
+    Represents a collision box relative to an entity's position.
+
+    Requires a reference to the entity before use.
+    """
+
+    NO_ENTITY_MSG = "HitBox must be associated with an Entity before use."
+
+    def __init__(self, x: float, y: float, w: float, h: float):
+        self.relative_x: float = x
+        self.relative_y: float = y
+        self._w: float = w
+        self._h: float = h
+        self.relative_rect = Rect(x, y, w, h)
+
+    _entity: "Entity | None" = None
+
+    @property
+    def entity(self) -> "Entity":
+        if self._entity is None:
+            raise ValueError(self.NO_ENTITY_MSG)
+        return self._entity
+
+    @entity.setter
+    def entity(self, value: "Entity"):
+        self._entity = value
+
+    def collides(self, other: "HitBox") -> bool:
+        r1: Rect = self.abs_rect
+        r2 = other.abs_rect
+        return r1.left <= r2.right and r1.right >= r2.left and r1.top <= r2.bottom and r1.bottom >= r2.top
+
+    @property
+    def abs_rect(self):
+        x = self.relative_rect.x + self.entity.rect.x
+        y = self.relative_rect.y + self.entity.rect.y
+        return Rect(x, y, self._w, self._h)
+
+    def debug_draw(self, color: int = 9) -> None:
+        r = self.abs_rect
+        pyxel.rect(r.x, r.y, r.w, r.h, color)
+
+
+@dataclass
+class EntityPart:
+    frame_manager: FrameManager = field(default_factory=FrameManager.empty)
+    offset: tuple[float, float] = (0, 0)
+
+
+class Entity:
+    """
+    A game entity with position, collision handling, and sprite management.
 
     An Entity can be either:
     1. A single-part entity:
@@ -91,59 +124,70 @@ class Entity(RectMixin):
           {"frame_manager": frame_manager, "offset": (x, y)}.
         - The "offset" key is optional.
 
-    Both kinds of entities can have multiple hitboxes. If no hitbox is provided, 
+    Both kinds of entities can have multiple hitboxes. If no hitbox is provided,
     the entity gets a default hitbox based on its dimensions.
     """
 
-    def __init__(self, x : float, y : float, w : float, h : float, parts : Iterable[dict] = None, hitboxes : Iterable[HitBox] = None):
-        self.x : float = x
-        self.y : float = y
-        self.w : float = w
-        self.h : float = h
+    def __init__(
+        self,
+        rect: Rect,
+        parts: tuple[EntityPart, ...] | None = None,
+        hitboxes: Iterable[HitBox] | None = None,
+    ):
+        self.rect = rect
 
-        self.parts = parts
-        if parts is None:
-            self.parts = ({"frame_manager" : None},)
-        
-        self.hitboxes = hitboxes
-        if hitboxes is None:
-            self.hitboxes = [HitBox(0, 0, w, h)]
+        self.parts: tuple[EntityPart, ...] = parts or (EntityPart(),)
+
+        self.hitboxes = hitboxes or [HitBox(0, 0, self.rect.w, self.rect.h)]
         for hitbox in self.hitboxes:
             hitbox.entity = self
 
     @property
     def frame(self) -> FrameManager:
         """Convenience property to access the main part's frame manager."""
-        return self.parts[0]["frame_manager"]
-    
+        return self.parts[0].frame_manager
+
     @frame.setter
-    def frame(self, value : FrameManager):
+    def frame(self, value: FrameManager):
         """Convenience property to set the main part's frame manager."""
-        if not isinstance(value, FrameManager):
-            raise TypeError("frame must be an instance of FrameManager.")
-        self.parts[0]["frame_manager"] = value 
-    
-    def collides(self, other) -> bool:
+        self.parts[0].frame_manager = value
+
+    def collides(self, other: "Entity") -> bool:
         return any(
-            self_hitbox.collides(other_hitbox)
-            for self_hitbox in self.hitboxes
-            for other_hitbox in other.hitboxes
+            self_hitbox.collides(other_hitbox) for self_hitbox in self.hitboxes for other_hitbox in other.hitboxes
         )
-    
+
     def update(self):
         # Extract unique FrameManager instances from parts
-        unique_frame_managers = {part["frame_manager"] for part in self.parts}
+        unique_frame_managers = {part.frame_manager for part in self.parts}
         # Ensure the frames stay in sync by only updating unique frame managers
         for frame_manager in unique_frame_managers:
             frame_manager.update()
 
-    def draw(self, show_bounding_box=False ,show_hitboxes=False):
-        if show_bounding_box:
-            pyxel.rect(self.x, self.y, self.w, self.h, 3)
-        if show_hitboxes:
+    def move(self, dx: float, dy: float):
+        """Move the entity and update hitbox positions."""
+        # Move the entity
+        self.rect.x += dx
+        self.rect.y += dy
+
+    def draw(self, *, debug: Literal["bounding box", "hitboxes", "all"] | None = "hitboxes"):
+        """
+        Draw the entity on the screen.
+
+        Args:
+            debug: Optional debug mode. Can be one of:
+                - "bounding box": Draw the entity's bounding box.
+                - "hitboxes": Draw the entity's hitboxes.
+                - "all": Draw both the bounding box and hitboxes.
+                - None: Don't draw any debug information (default).
+
+        """
+        if debug in ("bounding box", "all"):
+            self.rect.debug_draw(color=3)
+        if debug in ("hitboxes", "all"):
             for hitbox in self.hitboxes:
                 hitbox.debug_draw()
-        
+
         for part in self.parts:
-            offset_x, offset_y = part.get("offset", (0, 0))
-            part["frame_manager"].draw(self.x + offset_x, self.y + offset_y)
+            offset_x, offset_y = part.offset
+            part.frame_manager.draw(self.rect.x + offset_x, self.rect.y + offset_y)
