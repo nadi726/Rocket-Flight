@@ -141,6 +141,8 @@ class Entity:
         self.rect = rect
         self.parts: tuple[EntityPart, ...] = parts or (EntityPart(),)
         self.hitboxes = hitboxes or [HitBox(0, 0, self.rect.w, self.rect.h)]
+        self.vx: float = 0
+        self.vy: float = 0
 
         for hitbox in self.hitboxes:
             hitbox.entity = self
@@ -166,6 +168,8 @@ class Entity:
         # Ensure the frames stay in sync by only updating unique frame managers
         for frame_manager in unique_frame_managers:
             frame_manager.update()
+
+        self.move(self.vx, self.vy)
 
     def move(self, dx: float, dy: float):
         """Move the entity and update hitbox positions."""

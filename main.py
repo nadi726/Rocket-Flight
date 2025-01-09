@@ -4,6 +4,7 @@ import consts
 from entity import Entity
 from lasers import make_laser
 from player import Player
+from projectile import make_projectile
 from scientist import Scientist
 
 
@@ -37,7 +38,7 @@ class App:
 
     # generate new entities for this frame
     def generate_entities(self):
-        self.scrollables.update(self.generate_scientists() | self.generate_lasers())
+        self.scrollables.update(self.generate_scientists() | self.generate_lasers() | self.generate_projectiles())
 
     def generate_scientists(self) -> set[Entity]:
         if pyxel.frame_count % 5 != 0 or pyxel.rndi(1, 10) != 1:
@@ -50,6 +51,13 @@ class App:
     def generate_lasers(self) -> set[Entity]:
         if pyxel.frame_count % 100 == 0:
             return make_laser()
+        return set()
+
+    def generate_projectiles(self) -> set[Entity]:
+        if pyxel.frame_count % pyxel.rndi(200, 204) == 0:
+            return {
+                make_projectile(),
+            }
         return set()
 
     def draw(self):

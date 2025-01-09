@@ -20,11 +20,6 @@ class Scientist(Entity):
         super().__init__(Rect(pyxel.width, pyxel.height * 4 / 5 - self.H + 3, self.W, self.H))
         if direction == 1:
             self.frame_manager = FrameManager(self.FRAMES)
-            self.v = 0
         else:
             self.frame_manager = FrameManager(self.REVERSED_FRAMES)
-            self.v = -1
-
-    def update(self):
-        super().update()
-        self.rect.x += self.v
+            self.vx = -1

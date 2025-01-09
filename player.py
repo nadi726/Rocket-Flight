@@ -16,22 +16,22 @@ class Player(Entity):
     def __init__(self):
         super().__init__(Rect(self.START_X, self.START_Y, Player.W, Player.H))
         self.frame_manager = FrameManager(self.FLY_FRAMES)
-        self.v = 0.2
+        self.vy = 0.2
         self.a = 0.3
 
     def update(self):
         super().update()
-        self.v += min(self.a, self.MAX_SPEED)
-        self.rect.y = max(0, self.rect.y + self.v)
+        self.vy += min(self.a, self.MAX_SPEED)
+        self.rect.y = max(0, self.rect.y)
 
         if self.rect.bottom >= FLOOR_Y:
             self.rect.bottom = FLOOR_Y - 1
-            self.v = 0
+            self.vy = 0
             self.a = 0
             self.frame_manager = FrameManager(self.RUN_FRAMES)
 
         if pyxel.btn(pyxel.KEY_SPACE):
-            self.v = -3
+            self.vy = -3
             if self.a == 0:
                 self.a = 0.3
                 self.frame_manager = FrameManager(self.FLY_FRAMES)
