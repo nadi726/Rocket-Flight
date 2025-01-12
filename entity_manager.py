@@ -4,7 +4,8 @@ from enum import Enum
 import pyxel
 
 import consts
-from entity import Entity, Rect
+from coins import make_coins
+from entity import Entity
 from lasers import make_laser
 from projectile import make_projectile
 from scientist import Scientist
@@ -16,11 +17,6 @@ class EntityType(Enum):
     PROJECTILE = 2
     COIN = 3
     PLAYER_BULLET = 4
-
-
-def make_coins():
-    """Placeholder fo coin generation"""
-    return {Entity(Rect(consts.W, 40, 150, 100))}
 
 
 class EntityManager:
