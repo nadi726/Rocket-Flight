@@ -1,82 +1,94 @@
+from collections.abc import Generator
+from enum import Enum
+
 import pyxel
 
 import consts
-from entity import Entity
+from entity import Entity, Rect
 from lasers import make_laser
 from projectile import make_projectile
 from scientist import Scientist
 
-all_entities: set[Entity] = set()
-scrollables: set[Entity] = set()
-scientists: set[Entity] = set()
-hazards: set[Entity] = set()
-coins: set[Entity] = set()
-player_bullets: set[Entity] = set()
+
+class EntityType(Enum):
+    SCIENTIST = 0
+    LASER = 1
+    PROJECTILE = 2
+    COIN = 3
+    PLAYER_BULLET = 4
 
 
-def _generate_scientists() -> set[Entity]:
-    if pyxel.frame_count % 5 != 0 or pyxel.rndi(1, 10) != 1:
-        return set()  # don't generate anything
-
-    scientist = Scientist(direction=-1) if pyxel.rndi(1, 5) == 1 else Scientist()
-    scientists.add(scientist)
-    return {scientist}
-
-def _generate_lasers() -> set[Entity]:
-    if pyxel.frame_count % 100 == 0:
-        return make_laser()
-    return set()
-
-def _generate_projectiles() -> set[Entity]:
-    if pyxel.frame_count % pyxel.rndi(200, 204) == 0:
-        return {
-            make_projectile(),
-        }
-    return set()
-
-def _generate_coins() -> set[Entity]:
-    return set()
+def make_coins():
+    """Placeholder fo coin generation"""
+    return {Entity(Rect(consts.W, 40, 150, 100))}
 
 
-# generate new entities for this frame
-def _generate_entities():
-    new_scientists = _generate_scientists()
-    new_hazards = _generate_lasers() | _generate_projectiles()
-    new_coins = _generate_coins()
+class EntityManager:
+    PROJECTILE_SPAWN_CHANCE = 40
+    COINS_SPAWN_CHANCE = 30
 
-    scientists.update(new_scientists)
-    hazards.update(new_hazards)
-    coins.update(new_coins)
+    def __init__(self):
+        self.all_entities: set[Entity] = set()
+        self.scrollables: set[Entity] = set()
+        self.scientists: set[Entity] = set()
+        self.hazards: set[Entity] = set()
+        self.coins: set[Entity] = set()
+        self.player_bullets: set[Entity] = set()
+        self.generator = self._entity_generator()
 
-    new_entities = new_scientists | new_hazards | new_coins
-    scrollables.update(new_entities)
-    all_entities.update(new_entities)
+    def _generate_scientists(self):
+        if pyxel.frame_count % 5 != 0 or pyxel.rndi(1, 10) != 1:
+            return
+        scientist = Scientist(direction=-1) if pyxel.rndi(1, 5) == 1 else Scientist()
+        self.scientists.add(scientist)
+        self.all_entities.add(scientist)
+        self.scrollables.add(scientist)
+
+    def _remove_entities(self):
+        to_remove = {e for e in self.scrollables if e.rect.right < 0}
+        to_remove.update([b for b in self.player_bullets if b.rect.top > consts.H])
+
+        self.scrollables -= to_remove
+        self.scientists -= to_remove
+        self.player_bullets -= to_remove
+        self.all_entities -= to_remove
+
+    def _entity_generator(self) -> Generator[tuple[set[Entity], EntityType], None, None]:
+        while True:
+            yield (make_laser(), EntityType.LASER)
+            if pyxel.rndf(1, 100) < self.PROJECTILE_SPAWN_CHANCE:
+                yield ({make_projectile()}, EntityType.PROJECTILE)
+            if pyxel.rndf(1, 100) < self.COINS_SPAWN_CHANCE:
+                yield (make_coins(), EntityType.COIN)
+
+    def _generate_entities(self):
+        if pyxel.frame_count % 40 != 0:
+            return
+        entities, entity_type = next(self.generator)
+        self.all_entities.update(entities)
+        self.scrollables.update(entities)
+        match entity_type:
+            case EntityType.LASER | EntityType.PROJECTILE:
+                self.hazards.update(entities)
+            case EntityType.COIN:
+                self.coins.update(entities)
+            case _:
+                pass
+
+    def update(self):
+        self._generate_entities()
+        self._generate_scientists()
+        self._remove_entities()
+
+        for entity in self.all_entities:
+            entity.update()
+            if entity in self.scrollables:
+                entity.move(-consts.SCROLL_SPEED, 0)
+
+    def draw(self):
+        for entity in self.scrollables:
+            entity.draw()
 
 
-def _remove_entities():
-    to_remove: set[Entity] = set()
-    for entity in scrollables:
-        if entity.rect.right < 0:
-            to_remove.add(entity)
-
-    to_remove.update([bullet for bullet in player_bullets if bullet.rect.top > consts.H])
-
-    scrollables.difference_update(to_remove)
-    to_remove -= scrollables
-    scientists.difference_update(to_remove)
-    to_remove -= scientists
-    player_bullets.difference_update(to_remove)
-
-
-def draw():
-    for entity in scrollables:
-        entity.draw()
-
-def update():
-    _remove_entities()
-    _generate_entities()
-    for entity in all_entities:
-        entity.update()
-        if entity in scrollables:
-            entity.move(-3, 0)
-
+# Singleton instance
+entity_manager = EntityManager()

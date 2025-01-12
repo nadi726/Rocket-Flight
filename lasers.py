@@ -18,7 +18,7 @@ from frame_manager import Frame, FrameManager
 
 # constants
 FRAME_COUNT = 4  # Total of frames for each laser part
-LASER_SIZE_BOUNDS = (2, 5)  # min size and max size for random laser generation
+LASER_SIZE_BOUNDS = (3, 6)  # min size and max size for random laser generation
 
 HALF_TILE = TILE_SIZE // 2
 LASER_X = consts.W

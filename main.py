@@ -1,7 +1,7 @@
 import pyxel
 
 import consts
-import entity_manager
+from entity_manager import entity_manager
 from player import Player
 
 
