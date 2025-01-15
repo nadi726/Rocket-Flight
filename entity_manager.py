@@ -1,5 +1,4 @@
-from collections.abc import Generator
-from enum import Enum
+from collections.abc import Generator, Iterable
 from typing import TYPE_CHECKING
 
 import pyxel
@@ -16,12 +15,47 @@ if TYPE_CHECKING:
     from entity import Rect
 
 
-class EntityType(Enum):
-    SCIENTIST = 0
-    LASER = 1
-    PROJECTILE = 2
-    COIN = 3
-    PLAYER_BULLET = 4
+SCROLLABLE = "scrollable"
+SCIENTIST = "scientist"
+HAZARD = "hazard"
+COIN = "coin"
+PLAYER_BULLET = "player_bullet"
+
+TAGS = (SCROLLABLE, SCIENTIST, HAZARD, COIN, PLAYER_BULLET)
+
+
+class EntityCollection:
+    def __init__(self):
+        self.entities: set[Entity] = set()
+        self.groups: dict[str, set[Entity]] = {}
+        for tag in TAGS:
+            self.groups[tag] = set()
+
+    def __iter__(self):
+        return iter(self.entities)
+
+    def add(self, entity: Entity, tags: Iterable[str] = ()):
+        self.entities.add(entity)
+        for tag in tags:
+            self.groups[tag].add(entity)
+
+    def add_batch(self, entities: Iterable[Entity], tags: Iterable[str] = ()):
+        self.entities.update(entities)
+        for tag in tags:
+            self.groups[tag].update(entities)
+
+    def remove(self, entity: Entity):
+        self.entities.discard(entity)
+        for tag_group in self.groups.values():
+            tag_group.discard(entity)
+
+    def remove_batch(self, entities: Iterable[Entity]):
+        self.entities.difference_update(entities)
+        for tag_group in self.groups.values():
+            tag_group.difference_update(entities)
+
+    def get(self, tag: str) -> set[Entity]:
+        return self.groups[tag]
 
 
 class EntityManager:
@@ -29,69 +63,50 @@ class EntityManager:
     COINS_SPAWN_CHANCE = 30
 
     def __init__(self):
-        self.all_entities: set[Entity] = set()
-        self.scrollables: set[Entity] = set()
-        self.scientists: set[Entity] = set()
-        self.hazards: set[Entity] = set()
-        self.coins: set[Entity] = set()
-        self.player_bullets: set[Entity] = set()
+        self.entities = EntityCollection()
         self.generator = self._entity_generator()
+
+    def _entity_generator(self) -> Generator[tuple[set[Entity], tuple[str, ...]]]:
+        while True:
+            yield (make_laser(), (SCROLLABLE, HAZARD))
+            if pyxel.rndf(1, 100) < self.PROJECTILE_SPAWN_CHANCE:
+                yield ({make_projectile()}, (SCROLLABLE, HAZARD))
+            if pyxel.rndf(1, 100) < self.COINS_SPAWN_CHANCE:
+                yield (make_coins(), (SCROLLABLE, COIN))
+
+    def _generate_entities(self):
+        if pyxel.frame_count % 40 != 0:
+            return
+        self.entities.add_batch(*next(self.generator))
 
     def _generate_scientists(self):
         if pyxel.frame_count % 5 != 0 or pyxel.rndi(1, 10) != 1:
             return
         scientist = Scientist(direction=-1) if pyxel.rndi(1, 5) == 1 else Scientist()
-        self.scientists.add(scientist)
-        self.all_entities.add(scientist)
-        self.scrollables.add(scientist)
+        self.entities.add(scientist, (SCROLLABLE, SCIENTIST))
 
     def _remove_entities(self):
-        to_remove = {e for e in self.scrollables if e.rect.right < 0}
-        to_remove.update([b for b in self.player_bullets if b.rect.top > consts.H])
+        to_remove = {e for e in self.entities.get(SCROLLABLE) if e.rect.right < 0}
+        to_remove.update([b for b in self.entities.get(PLAYER_BULLET) if b.rect.top > consts.H])
+        self.entities.remove_batch(to_remove)
 
-        self.scrollables -= to_remove
-        self.scientists -= to_remove
-        self.player_bullets -= to_remove
-        self.all_entities -= to_remove
-
-    def _entity_generator(self) -> Generator[tuple[set[Entity], EntityType], None, None]:
-        while True:
-            yield (make_laser(), EntityType.LASER)
-            if pyxel.rndf(1, 100) < self.PROJECTILE_SPAWN_CHANCE:
-                yield ({make_projectile()}, EntityType.PROJECTILE)
-            if pyxel.rndf(1, 100) < self.COINS_SPAWN_CHANCE:
-                yield (make_coins(), EntityType.COIN)
-
-    def _generate_entities(self):
-        if pyxel.frame_count % 40 != 0:
-            return
-        entities, entity_type = next(self.generator)
-        self.all_entities.update(entities)
-        self.scrollables.update(entities)
-        match entity_type:
-            case EntityType.LASER | EntityType.PROJECTILE:
-                self.hazards.update(entities)
-            case EntityType.COIN:
-                self.coins.update(entities)
-            case _:
-                pass
+    def _move_scrollables(self):
+        for entity in self.entities.get(SCROLLABLE):
+            entity.move(-consts.SCROLL_SPEED, 0)
 
     def make_player_bullets(self, player_rect: "Rect"):
         new_bullets = make_player_bullets(player_rect)
-        self.player_bullets.update(new_bullets)
-        self.all_entities.update(new_bullets)
+        self.entities.add_batch(new_bullets, (PLAYER_BULLET,))
 
     def update(self):
         self._generate_entities()
         self._generate_scientists()
         self._remove_entities()
+        self._move_scrollables()
 
-        for entity in self.all_entities:
+        for entity in self.entities:
             entity.update()
-            if entity in self.scrollables:
-                entity.move(-consts.SCROLL_SPEED, 0)
 
     def draw(self):
-        for entity in self.all_entities:
+        for entity in self.entities:
             entity.draw()
-

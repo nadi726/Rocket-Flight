@@ -13,7 +13,7 @@ MAX_BULLETS = 3
 FRAMES = (Frame(0, 2 * consts.TILE_SIZE, 6 * consts.TILE_SIZE, BULLET_W, BULLET_H),)
 
 
-def _make_bullet(player_rect : Rect):
+def _make_bullet(player_rect: Rect):
     x = pyxel.rndf(player_rect.left, player_rect.left + player_rect.w / 2 - BULLET_W)
 
     bullet = Entity(Rect(x, player_rect.bottom, BULLET_W, BULLET_H))
@@ -21,6 +21,7 @@ def _make_bullet(player_rect : Rect):
     bullet.vy = pyxel.rndf(*BULLET_VY_RANGE)
     bullet.vx = pyxel.rndf(*BULLET_VX_RANGE)
     return bullet
+
 
 def make_player_bullets(player_rect: Rect):
     times = pyxel.rndi(1, 3)
