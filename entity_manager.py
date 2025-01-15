@@ -1,5 +1,6 @@
 from collections.abc import Generator
 from enum import Enum
+from typing import TYPE_CHECKING
 
 import pyxel
 
@@ -7,8 +8,12 @@ import consts
 from coins import make_coins
 from entity import Entity
 from lasers import make_laser
+from player_bullets import make_player_bullets
 from projectile import make_projectile
 from scientist import Scientist
+
+if TYPE_CHECKING:
+    from entity import Rect
 
 
 class EntityType(Enum):
@@ -71,6 +76,11 @@ class EntityManager:
             case _:
                 pass
 
+    def make_player_bullets(self, player_rect: "Rect"):
+        new_bullets = make_player_bullets(player_rect)
+        self.player_bullets.update(new_bullets)
+        self.all_entities.update(new_bullets)
+
     def update(self):
         self._generate_entities()
         self._generate_scientists()
@@ -82,9 +92,6 @@ class EntityManager:
                 entity.move(-consts.SCROLL_SPEED, 0)
 
     def draw(self):
-        for entity in self.scrollables:
+        for entity in self.all_entities:
             entity.draw()
 
-
-# Singleton instance
-entity_manager = EntityManager()
