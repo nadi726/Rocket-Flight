@@ -2,12 +2,12 @@ from typing import TYPE_CHECKING
 
 import pyxel
 
-from consts import FLOOR_Y, TILE_SIZE
-from entity import Entity, Rect
-from frame_manager import Frame, FrameManager
+from core.consts import FLOOR_Y, TILE_SIZE
+from core.frame_manager import Frame, FrameManager
+from entities.entity import Entity, Rect
 
 if TYPE_CHECKING:
-    from entity_manager import EntityManager
+    from core.entity_manager import EntityManager
 
 
 class Player(Entity):

@@ -11,10 +11,10 @@ from collections.abc import Callable, Iterable
 
 import pyxel
 
-import consts
-from consts import TILE_SIZE
-from entity import Entity, EntityPart, HitBox, Rect
-from frame_manager import Frame, FrameManager
+from core import consts
+from core.consts import TILE_SIZE
+from core.frame_manager import Frame, FrameManager
+from entities.entity import Entity, EntityPart, HitBox, Rect
 
 # constants
 FRAME_COUNT = 4  # Total of frames for each laser part

@@ -1,8 +1,8 @@
 import pyxel
 
-import consts
-from entity import Entity, Rect
-from frame_manager import Frame, FrameManager
+from core import consts
+from core.frame_manager import Frame, FrameManager
+from entities.entity import Entity, Rect
 
 PROJECTILE_W = 15
 PROJECTILE_H = 7

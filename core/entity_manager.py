@@ -3,16 +3,18 @@ from typing import TYPE_CHECKING
 
 import pyxel
 
-import consts
-from coins import make_coins
-from entity import Entity
-from lasers import make_laser
-from player_bullets import make_player_bullets
-from projectile import make_projectile
-from scientist import Scientist
+from core import consts
+from entities.concrete import (
+    Scientist,
+    make_coins,
+    make_laser,
+    make_player_bullets,
+    make_projectile,
+)
+from entities.entity import Entity
 
 if TYPE_CHECKING:
-    from entity import Rect
+    from entities.entity import Rect
 
 
 SCROLLABLE = "scrollable"

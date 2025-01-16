@@ -2,9 +2,9 @@ from typing import Literal
 
 import pyxel
 
-from consts import TILE_SIZE
-from entity import Entity, Rect
-from frame_manager import Frame, FrameManager
+from core.consts import TILE_SIZE
+from core.frame_manager import Frame, FrameManager
+from entities.entity import Entity, Rect
 
 SCIENTIST_W = 9
 SCIENTIST_H = 14

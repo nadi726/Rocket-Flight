@@ -3,7 +3,7 @@ from itertools import cycle
 
 import pyxel
 
-from consts import IMG_COLKEY
+from core.consts import IMG_COLKEY
 
 
 @dataclass

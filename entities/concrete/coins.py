@@ -1,8 +1,8 @@
 import pyxel
 
-import consts
-from entity import Entity, Rect
-from frame_manager import Frame, FrameManager
+from core import consts
+from core.frame_manager import Frame, FrameManager
+from entities.entity import Entity, Rect
 
 COIN_SIZE = 11
 COIN_GAP = 3
