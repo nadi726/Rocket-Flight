@@ -59,7 +59,7 @@ def make_frame_manager(  # noqa: PLR0913
     width: float,
     height: float,
     img: pyxel.Image | int = 0,
-    colkey: int = 3,
+    colkey: int = consts.IMG_COLKEY,
     count: int = FRAME_COUNT,
     frame_delay: int = 2,
 ):
@@ -115,7 +115,7 @@ def make_parts(frame_managers: Iterable[FrameManager], offsets: Iterable[tuple[f
 
 def generate_y(height: int):
     """Randomaly generate the laser's y, taking into account height"""
-    return pyxel.rndi(consts.CEILING_Y, consts.FLOOR_Y - height)
+    return pyxel.rndi(consts.CEILING_Y + 2, consts.FLOOR_Y - height)
 
 
 def make_horizontal(size: int) -> set[Entity]:

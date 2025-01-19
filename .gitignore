@@ -1,4 +1,4 @@
 __pycache__/
 .ruff_cache/
-*.png
+pyxel-*.png
 *.gif

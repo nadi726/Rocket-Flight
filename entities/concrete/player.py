@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 import pyxel
 
-from core.consts import FLOOR_Y, TILE_SIZE
+from core.consts import CEILING_Y, FLOOR_Y, TILE_SIZE
 from core.frame_manager import Frame, FrameManager
 from entities.entity import Entity, Rect
 
@@ -28,7 +28,7 @@ class Player(Entity):
     def update(self):
         super().update()
         self.vy += min(self.a, self.MAX_SPEED)
-        self.rect.y = max(0, self.rect.y)
+        self.rect.y = max(CEILING_Y, self.rect.y)
 
         if self.rect.bottom >= FLOOR_Y:
             self.rect.bottom = FLOOR_Y - 1
