@@ -100,12 +100,17 @@ class EntityManager:
         new_bullets = make_player_bullets(player_rect)
         self.entities.add_batch(new_bullets, (PLAYER_BULLET,))
 
-    def update(self):
+    def is_hazard(self, entity: "Entity"):
+        return entity in self.entities.get(HAZARD)
+
+    def update_scrollables(self):
         self._generate_entities()
         self._generate_scientists()
-        self._remove_entities()
         self._move_scrollables()
 
+    def update_static(self):
+        """Updates everything that should be updated when the screen is not scrolling"""
+        self._remove_entities()
         for entity in self.entities:
             entity.update()
 
