@@ -99,7 +99,6 @@ class EntityManager:
         for entity in self.entities.get(SCROLLABLE):
             entity.move(-consts.SCROLL_SPEED, 0)
 
-
     def _handle_scientist_collisions(self):
         """Handles player bullet collisions with scientists."""
         collided_scientists: set[Entity] = set()
