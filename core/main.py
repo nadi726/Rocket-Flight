@@ -42,15 +42,20 @@ class App:
             case GameState.PLAYING:
                 if pyxel.btn(pyxel.KEY_SPACE):
                     self.player.on_key_press()
-                self.score += consts.POINTS_PER_FRAME
+                self.update_score()
                 self.background.update()
-                self.entity_manager.update_scrollables()
+                self.entity_manager.update_scrollables(self.player)
                 if self.player.is_game_over():
                     self.state = GameState.GAME_OVER
 
             case GameState.GAME_OVER:
                 if pyxel.btnp(pyxel.KEY_SPACE):
                     self.reset()
+
+    def update_score(self):
+        self.score += consts.POINTS_PER_FRAME
+        self.score += self.player.collect_coins() * consts.POINTS_PER_COIN
+        self.score += self.entity_manager.collect_dead_scientists() * consts.POINTS_PER_SCIENTIST
 
     def reset(self):
         self.entity_manager = EntityManager()

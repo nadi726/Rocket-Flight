@@ -5,4 +5,7 @@ CEILING_Y = 10
 TILE_SIZE = 16
 IMG_COLKEY = 2
 SCROLL_SPEED = 5
+
 POINTS_PER_FRAME = 0.5  # By how much is the player's is score updated every frame
+POINTS_PER_COIN = 100
+POINTS_PER_SCIENTIST = 40

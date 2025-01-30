@@ -60,10 +60,6 @@ class PlayerPlayState(PlayerState):
             player.ay = 0
             player.frame_manager = FrameManager(player.RUN_FRAMES)
 
-        for entity in player.entity_manager.entities:
-            if player.collides(entity) and player.entity_manager.is_hazard(entity):
-                player.set_state(PlayerFallState)
-
     @staticmethod
     def on_key_press(player: "Player"):
         player.vy = player.START_VY
@@ -116,6 +112,7 @@ class Player(Entity):
         self.ax: float = 0.0
         self.entity_manager = entity_manager
         self.set_state(PlayerState)
+        self.coins = 0
 
     def update(self):
         super().update()
@@ -123,6 +120,11 @@ class Player(Entity):
         self.vx += min(self.ax, self.MAX_SPEED)
         self.rect.y = max(CEILING_Y, self.rect.y)
         self.state.update(self)
+
+    def collect_coins(self):
+        coins = self.coins
+        self.coins = 0
+        return coins
 
     def set_state(self, state: type[PlayerState]):
         self.state = state

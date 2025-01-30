@@ -14,6 +14,7 @@ from entities.concrete import (
 from entities.entity import Entity
 
 if TYPE_CHECKING:
+    from entities.concrete.player import Player
     from entities.entity import Rect
 
 
@@ -67,6 +68,7 @@ class EntityManager:
     def __init__(self):
         self.entities = EntityCollection()
         self.generator = self._entity_generator()
+        self.dead_scientists: int = 0
 
     def _entity_generator(self) -> Generator[tuple[set[Entity], tuple[str, ...]]]:
         while True:
@@ -88,25 +90,70 @@ class EntityManager:
         self.entities.add(scientist, (SCROLLABLE, SCIENTIST))
 
     def _remove_entities(self):
-        to_remove = {e for e in self.entities.get(SCROLLABLE) if e.rect.right < 0}
-        to_remove.update([b for b in self.entities.get(PLAYER_BULLET) if b.rect.top > consts.H])
+        to_remove = {e for e in self.entities.get(SCROLLABLE) if e.rect.right < 0} | {
+            b for b in self.entities.get(PLAYER_BULLET) if b.rect.top > consts.H
+        }
         self.entities.remove_batch(to_remove)
 
     def _move_scrollables(self):
         for entity in self.entities.get(SCROLLABLE):
             entity.move(-consts.SCROLL_SPEED, 0)
 
+
+    def _handle_scientist_collisions(self):
+        """Handles player bullet collisions with scientists."""
+        collided_scientists: set[Entity] = set()
+        collided_bullets: set[Entity] = set()
+
+        for bullet in self.entities.get(PLAYER_BULLET):
+            for scientist in self.entities.get(SCIENTIST):
+                if bullet.collides(scientist):
+                    collided_bullets.add(bullet)
+                    collided_scientists.add(scientist)
+                    break
+
+        self.entities.remove_batch(collided_bullets)
+        self.entities.remove_batch(collided_scientists)
+        self.dead_scientists += len(collided_scientists)
+
+    def _handle_coin_collisions(self, player: "Player"):
+        """Handles player collisions with coins."""
+        collided_coins = {coin for coin in self.entities.get(COIN) if coin.collides(player)}
+        self.entities.remove_batch(collided_coins)
+        player.coins += len(collided_coins)
+
+    def _handle_hazard_collisions(self, player: "Player"):
+        """Handles player collisions with hazards."""
+        colliding = next((h for h in self.entities.get(HAZARD) if player.collides(h)), None)
+        if colliding:
+            player.game_over()
+
+    def _handle_collisions(self, player: "Player"):
+        """Handles all entity collisions in separate steps."""
+        self._handle_scientist_collisions()
+        self._handle_coin_collisions(player)
+        self._handle_hazard_collisions(player)
+
     def make_player_bullets(self, player_rect: "Rect"):
         new_bullets = make_player_bullets(player_rect)
         self.entities.add_batch(new_bullets, (PLAYER_BULLET,))
 
-    def is_hazard(self, entity: "Entity"):
-        return entity in self.entities.get(HAZARD)
+    def collect_dead_scientists(self):
+        dead_scientists = self.dead_scientists
+        self.dead_scientists = 0
+        return dead_scientists
 
-    def update_scrollables(self):
+    def update_scrollables(self, player: "Player"):
+        """
+        Updates the scrollable entities.
+
+        Should be called every frame when the screen is scrolling.
+        Generates new entities, move existing ones, and handle collisions.
+        """
         self._generate_entities()
         self._generate_scientists()
         self._move_scrollables()
+        self._handle_collisions(player)
 
     def update_static(self):
         """Updates everything that should be updated when the screen is not scrolling"""
