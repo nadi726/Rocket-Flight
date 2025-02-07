@@ -4,6 +4,7 @@ import pyxel
 
 from core.consts import CEILING_Y, FLOOR_Y, TILE_SIZE
 from core.frame_manager import Frame, FrameManager
+from core.sounds import sounds
 from entities.entity import Entity, Rect
 
 if TYPE_CHECKING:
@@ -74,6 +75,7 @@ class PlayerPlayState(PlayerState):
 class PlayerGameOverState(PlayerState):
     @staticmethod
     def enter(player: "Player"):
+        sounds.game_over()
         player.vx = player.GAMEOVER_VELOCITY[0]
         player.vy = player.GAMEOVER_VELOCITY[1]
         player.ay = player.FALL_ACCELERATION
@@ -125,7 +127,7 @@ class Player(Entity):
         self.ay: float = 0.0
         self.ax: float = 0.0
         self.entity_manager = entity_manager
-        self.set_state(PlayerState) # Acts as a placeholder state
+        self.set_state(PlayerState)  # Acts as a placeholder state
         self.coins = 0
         self.key_is_pressed = False
         self.is_flying = False
@@ -148,6 +150,7 @@ class Player(Entity):
             self.frame_manager = self.FRAME_MANAGERS.fly
             self.is_flying = True
         if pyxel.frame_count % 3 == 0:
+            sounds.fly()
             self.entity_manager.make_player_bullets(self.rect)
 
     def fall(self):

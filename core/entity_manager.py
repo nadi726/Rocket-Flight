@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 import pyxel
 
 from core import consts
+from core.sounds import sounds
 from entities.concrete import (
     Scientist,
     make_coins,
@@ -91,7 +92,7 @@ class EntityManager:
 
     def _remove_entities(self):
         to_remove = {e for e in self.entities.get(SCROLLABLE) if e.rect.right < 0} | {
-            b for b in self.entities.get(PLAYER_BULLET) if b.rect.top > consts.H
+            b for b in self.entities.get(PLAYER_BULLET) if b.rect.top > consts.FLOOR_Y
         }
         self.entities.remove_batch(to_remove)
 
@@ -120,6 +121,8 @@ class EntityManager:
         collided_coins = {coin for coin in self.entities.get(COIN) if coin.collides(player)}
         self.entities.remove_batch(collided_coins)
         player.coins += len(collided_coins)
+        if collided_coins:
+            sounds.catch_coin()
 
     def _handle_hazard_collisions(self, player: "Player"):
         """Handles player collisions with hazards."""
@@ -147,7 +150,7 @@ class EntityManager:
         Updates the scrollable entities.
 
         Should be called every frame when the screen is scrolling.
-        Generates new entities, move existing ones, and handle collisions.
+        Generates new entities, moves existing ones, and handles collisions.
         """
         self._generate_entities()
         self._generate_scientists()

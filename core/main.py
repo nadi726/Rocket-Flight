@@ -5,6 +5,7 @@ import pyxel
 from core import consts
 from core.background import Background
 from core.entity_manager import EntityManager
+from core.sounds import sounds
 from entities.concrete.player import Player
 
 
@@ -19,38 +20,62 @@ class App:
     def __init__(self):
         pyxel.init(consts.W, consts.H)
         pyxel.load("../resources/res.pyxres")
+
+        self.is_music_playing = False
+        self.toggle_music()
+
         self.small_font = pyxel.Font("../resources/spleen-5x8.bdf")
         self.big_font = pyxel.Font("../resources/spleen-8x16.bdf")
-        self.reset()
+
         self.background = Background()
+        self.reset()
 
         pyxel.run(self.update, self.draw)
 
     def update(self):
+        if pyxel.btnp(pyxel.KEY_M):
+            self.toggle_music()
+
         self.player.update()
         self.entity_manager.update_static()
+
         match self.state:
             case GameState.START:
                 if pyxel.btnp(pyxel.KEY_SPACE):
-                    self.state = GameState.PLAYER_ENTERING
+                    sounds.transition()
                     self.player.start()
+                    self.state = GameState.PLAYER_ENTERING
 
             case GameState.PLAYER_ENTERING:
                 if self.player.has_finished_entering():
                     self.state = GameState.PLAYING
 
             case GameState.PLAYING:
-                if pyxel.btn(pyxel.KEY_SPACE):
-                    self.player.on_key_press()
-                self.update_score()
-                self.background.update()
-                self.entity_manager.update_scrollables(self.player)
-                if self.player.is_game_over():
-                    self.state = GameState.GAME_OVER
+                self.update_playing()
 
             case GameState.GAME_OVER:
                 if pyxel.btnp(pyxel.KEY_SPACE):
+                    sounds.transition()
                     self.reset()
+
+    def update_playing(self):
+        if pyxel.btn(pyxel.KEY_SPACE):
+            self.player.on_key_press()
+
+        self.update_score()
+        self.background.update()
+        self.entity_manager.update_scrollables(self.player)
+
+        if self.player.is_game_over():
+            self.state = GameState.GAME_OVER
+
+    def toggle_music(self):
+        if self.is_music_playing:
+            for channel in range(3):
+                pyxel.stop(channel)
+        else:
+            pyxel.playm(0, loop=True)
+        self.is_music_playing = not self.is_music_playing
 
     def update_score(self):
         self.score += consts.POINTS_PER_FRAME
