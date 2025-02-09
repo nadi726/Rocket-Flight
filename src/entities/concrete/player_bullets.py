@@ -1,8 +1,8 @@
 import pyxel
 
-from core import consts
-from core.frame_manager import Frame, FrameManager
-from entities.entity import Entity, Rect
+from src.core import consts
+from src.core.frame_manager import Frame, FrameManager
+from src.entities.entity import Entity, Rect
 
 BULLET_W = 3
 BULLET_H = 4

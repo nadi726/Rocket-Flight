@@ -4,7 +4,7 @@ from typing import Literal
 
 import pyxel
 
-from core.frame_manager import FrameManager
+from src.core.frame_manager import FrameManager
 
 
 @dataclass

@@ -3,12 +3,13 @@ from enum import Enum
 
 import pyxel
 
-from core import consts
-from core.background import Background
-from core.entity_manager import EntityManager
-from core.sounds import sounds
-from entities.concrete.player import Player
-from entities.entity import Rect
+from src.entities.concrete.player import Player
+from src.entities.entity import Rect
+
+from . import consts
+from .background import Background
+from .entity_manager import EntityManager
+from .sounds import sounds
 
 
 class GameState(Enum):
@@ -22,10 +23,10 @@ class App:
     def __init__(self):
         pyxel.init(consts.W, consts.H)
         pyxel.title("Rocket Flight")
-        pyxel.load("../resources/res.pyxres")
+        pyxel.load("../../resources/res.pyxres")
 
-        self.small_font = pyxel.Font("../resources/spleen-5x8.bdf")
-        self.big_font = pyxel.Font("../resources/spleen-8x16.bdf")
+        self.small_font = pyxel.Font("../../resources/spleen-5x8.bdf")
+        self.big_font = pyxel.Font("../../resources/spleen-8x16.bdf")
         self.music_button = MusicButton(110, 1, self.small_font)
 
         self.background = Background()

@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pyxel
 
-from core import consts
-from core.consts import SCROLL_SPEED
+from . import consts
+from .consts import SCROLL_SPEED
 
 BG_SCROLL_SPEED = SCROLL_SPEED // 3
 
@@ -15,8 +15,8 @@ class Background:
     """
 
     def __init__(self):
-        self.bg_img: pyxel.Image = self.load_image("../resources/background.png")
-        self.fg_img: pyxel.Image = self.load_image("../resources/floor.png")
+        self.bg_img: pyxel.Image = self.load_image("../../resources/background.png")
+        self.fg_img: pyxel.Image = self.load_image("../../resources/floor.png")
 
         self.bg_x: float = 0  # Background position
         self.fg_x: float = 0  # Foreground position

@@ -3,16 +3,17 @@ from typing import TYPE_CHECKING
 
 import pyxel
 
-from core import consts
-from core.sounds import sounds
-from entities.concrete import (
+from src.entities.concrete import (
     Scientist,
     make_coins,
     make_laser,
     make_player_bullets,
     make_projectile,
 )
-from entities.entity import Entity
+from src.entities.entity import Entity
+
+from . import consts
+from .sounds import sounds
 
 if TYPE_CHECKING:
     from entities.concrete.player import Player

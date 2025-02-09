@@ -3,6 +3,8 @@
 A simple, retro, fast-paced endless runner, built with Pyxel.
 Inspired by Jetpack Joyride.
 
+![Alt text](screenshots/01.gif)
+
 ## Gameplay
 
 Control your rocket-powered character and avoid hazards while collecting coins! Stay in the air by holding the action button and time your movements carefully.

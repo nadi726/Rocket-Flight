@@ -2,10 +2,10 @@ from typing import TYPE_CHECKING, NamedTuple
 
 import pyxel
 
-from core.consts import CEILING_Y, FLOOR_Y, TILE_SIZE
-from core.frame_manager import Frame, FrameManager
-from core.sounds import sounds
-from entities.entity import Entity, Rect
+from src.core.consts import CEILING_Y, FLOOR_Y, TILE_SIZE
+from src.core.frame_manager import Frame, FrameManager
+from src.core.sounds import sounds
+from src.entities.entity import Entity, Rect
 
 if TYPE_CHECKING:
     from core.entity_manager import EntityManager

@@ -1,3 +1,3 @@
-from core.main import App
+from src.core.main import App
 
 App()
