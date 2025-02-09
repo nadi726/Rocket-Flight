@@ -13,6 +13,9 @@ Control your rocket-powered character and avoid hazards while collecting coins! 
 - **screen transitions / Fly**: Press `Space` or `Left Mouse Button`
 - **Toggle Music**: Press `M` or click the **Music** button
 
+## Play on the web
+You can play the game directly in your browser using the Pyxel Web Launcher [here](https://kitao.github.io/pyxel/wasm/launcher/?play=nadi726.Rocket-Flight.dist.rocket-flight).
+
 ## Installation
 
 1. Install [Pyxel](https://github.com/kitao/pyxel) if you haven't already:
