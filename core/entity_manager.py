@@ -115,6 +115,8 @@ class EntityManager:
         self.entities.remove_batch(collided_bullets)
         self.entities.remove_batch(collided_scientists)
         self.dead_scientists += len(collided_scientists)
+        if collided_scientists:
+            sounds.hit_scientist()
 
     def _handle_coin_collisions(self, player: "Player"):
         """Handles player collisions with coins."""

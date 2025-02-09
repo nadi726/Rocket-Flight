@@ -144,6 +144,8 @@ def make_horizontal(size: int) -> set[Entity]:
 
 
 def make_vertical(size: int) -> set[Entity]:
+    size = min(4, size)  # for vertical lasers, maximum size is too difficult
+
     height = BASE_W * 2 + size * TILE_SIZE
     y = generate_y(height)
 

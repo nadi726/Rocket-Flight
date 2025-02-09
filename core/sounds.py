@@ -21,6 +21,9 @@ class _Sounds:
     def catch_coin(self):
         pyxel.play(3, 60)
 
+    def hit_scientist(self):
+        pyxel.play(3, 59)
+
     def game_over(self):
         pyxel.play(3, 62)
 
